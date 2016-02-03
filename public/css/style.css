@@ -1,3 +1,27 @@
 svg {
   font-family: FontAwesome;
 }
+
+svg .result {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.active circle {
+  stroke: #999900;
+}
+
+.active text {
+  fill: #999900;
+}
+
+.result.win {
+  fill: green;
+}
+
+.result.lose {
+  fill: #d01242;
+}
+
+.result.tie {
+  fill: gray;
+}

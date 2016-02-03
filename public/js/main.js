@@ -117,6 +117,7 @@ function play_it() {
     })
 
     element.on("click", function() {
+      d3.select(this).attr("class", "active");
       activate_turn(d3.select(this).attr("id"));
     })
   }
@@ -125,13 +126,15 @@ function play_it() {
     if (turn_active) return;
     turn_active = true;
 
-    var active = d3.select("#" + selected_one);
-    var others = d3.selectAll(".element:not(#" + selected_one + ")");
+    var active = d3.select(".active");
+    var others = d3.selectAll(".element");
 
     active.on("mouseenter", noop);
     active.on("mouseleave", noop);
+    active.on("click", noop);
     others.on("mouseenter", noop);
     others.on("mouseleave", noop);
+    others.on("click", noop);
     mystery.on("mouseenter", noop);
     mystery.on("mouseleave", noop);
 
@@ -159,15 +162,16 @@ function play_it() {
           .duration(300)
           .style("opacity", 0)
           .each("end", function() {
-            var random_hand = pick_hand();
+            var random = pick_hand();
             d3.select(this)
-              .text(random_hand.char)
-              .attr("x", random_hand.x)
-              .attr("y", random_hand.y)
-              .attr("font-size", random_hand.fontSize)
+              .text(random.char)
+              .attr("x", random.x)
+              .attr("y", random.y)
+              .attr("font-size", random.fontSize)
               .transition()
                 .duration(300)
-                .style("opacity", 1);
+                .style("opacity", 1)
+                .each("end", show_result.bind(this, selected_one, random.name));
           });
   }
 
@@ -181,6 +185,133 @@ function play_it() {
     ];
     var chosen = Math.floor(Math.random() * 5);
     return possibilities[chosen];
+  }
+
+  function show_result(player, random) {
+    var result = apply_game_logic(player, random);
+    var text = svg.append("text")
+      .attr("class", "result")
+      .attr("text-anchor", "middle")
+      .attr("x", 1500)
+      .attr("y", 450)
+      .attr("font-size", 80);
+    text.append("tspan")
+      .attr("fill", result.result === "lose" ? "#990099" : "#999900")
+      .text(result.first.toUpperCase());
+    text.append("tspan")
+      .attr("dx", 25)
+      .attr("fill", "gray")
+      .attr("font-size", 60)
+      .text(result.middle.toUpperCase());
+    text.append("tspan")
+      .attr("dx", 25)
+      .attr("fill", result.result === "lose" ? "#999900" : "#990099")
+      .text(result.second.toUpperCase());
+
+    var final_result = "YOU " + result.result.toUpperCase();
+    if (result.result == "tie") final_result = "YOU'VE TIED!";
+    svg.append("text")
+      .attr("class", "result " + result.result)
+      .attr("text-anchor", "middle")
+      .attr("x", 1500)
+      .attr("y", 900)
+      .attr("font-size", 80)
+      .text(final_result);
+    svg.append("text")
+      .attr("class", "result " + result.result)
+      .attr("text-anchor", "middle")
+      .attr("x", 1500)
+      .attr("y", 950)
+      .attr("font-size", 30)
+      .attr("cursor", "pointer")
+      .text("CLICK HERE TO PLAY AGAIN")
+      .on("mouseenter", function() {
+        d3.select(this).style("text-decoration", "underline");
+      })
+      .on("mouseleave", function() {
+        d3.select(this).style("text-decoration", null);
+      })
+      .on("click", function() {
+        d3.select(".main").remove();
+        play_it();
+      });
+  }
+
+  function apply_game_logic(player, random) {
+    //Case I: SAME PICK
+    if (player === random) {
+      return {first: player, second: random, middle: "ties", result: "tie"};
+    }
+    //Case II: SCISSORS VS PAPER
+    else if (player === "scissors" && random === "paper") {
+      return {first: "scissors", second: "paper", middle: "cuts", result: "win"}
+    }
+    else if (random === "scissors" && player === "paper") {
+      return {first: "scissors", second: "paper", middle: "cuts", result: "lose"}
+    }
+    // Case III: PAPER VS ROCK
+    else if (player === "paper" && random === "rock") {
+      return {first: "paper", second: "rock", middle: "covers", result: "win"}
+    }
+    else if (random === "paper" && player === "rock") {
+      return {first: "paper", second: "rock", middle: "covers", result: "lose"}
+    }
+    // Case IV: ROCK VS LIZARD
+    else if (player === "rock" && random === "lizard") {
+      return {first: "rock", second: "lizard", middle: "crushes", result: "win"}
+    }
+    else if (random === "rock" && player === "lizard") {
+      return {first: "rock", second: "lizard", middle: "crushes", result: "lose"}
+    }
+    // Case V: LIZARD VS SPOCK
+    else if (player === "lizard" && random === "spock") {
+      return {first: "lizard", second: "spock", middle: "poisons", result: "win"}
+    }
+    else if (random === "lizard" && player === "spock") {
+      return {first: "lizard", second: "spock", middle: "poisons", result: "lose"}
+    }
+    // Case V: SPOCK VS SCISSORS
+    else if (player === "spock" && random === "scissors") {
+      return {first: "spock", second: "scissors", middle: "smashes", result: "win"}
+    }
+    else if (random === "spock" && player === "scissors") {
+      return {first: "spock", second: "scissors", middle: "smashes", result: "lose"}
+    }
+    // Case VI: SCISSORS VS LIZARD
+    else if (player === "scissors" && random === "lizard") {
+      return {first: "scissors", second: "lizard", middle: "decapitates", result: "win"}
+    }
+    else if (random === "scissors" && player === "lizard") {
+      return {first: "scissors", second: "lizard", middle: "decapitates", result: "lose"}
+    }
+    // Case VII: LIZARD VS PAPER
+    else if (player === "lizard" && random === "paper") {
+      return {first: "lizard", second: "paper", middle: "eats", result: "win"}
+    }
+    else if (random === "lizard" && player === "paper") {
+      return {first: "lizard", second: "paper", middle: "eats", result: "lose"}
+    }
+    // Case VIII: PAPER VS SPOCK
+    else if (player === "paper" && random === "spock") {
+      return {first: "paper", second: "spock", middle: "disproves", result: "win"}
+    }
+    else if (random === "paper" && player === "spock") {
+      return {first: "paper", second: "spock", middle: "disproves", result: "lose"}
+    }
+    // Case IX: SPOCK VS ROCK
+    else if (player === "spock" && random === "rock") {
+      return {first: "spock", second: "rock", middle: "vaporizes", result: "win"}
+    }
+    else if (random === "spock" && player === "rock") {
+      return {first: "spock", second: "rock", middle: "vaporizes", result: "lose"}
+    }
+    // Case X: ROCK VS SCISSORS
+    else if (player === "rock" && random === "scissors") {
+      return {first: "rock", second: "scissors", middle: "crushes", result: "win"}
+    }
+    else if (random === "rock" && player === "scissors") {
+      return {first: "rock", second: "scissors", middle: "crushes", result: "lose"}
+    }
   }
 
   function noop() {}
