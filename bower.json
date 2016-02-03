@@ -1,0 +1,24 @@
+{
+  "name": "js-rpsls",
+  "authors": [
+    "Jorge Aguirre <jorge.aguirre.leon@gmail.com>"
+  ],
+  "description": "Rock Paper Scissors Lizard Spock",
+  "main": "main.html",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "^3.5.14",
+    "font-awesome": "^4.5.0",
+    "normalize-css": "normalize.css#^3.0.3"
+  }
+}
